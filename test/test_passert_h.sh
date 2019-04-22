@@ -1,6 +1,6 @@
 #! /bin/sh
 
-cmd="${1%/*}/test_passert_h.c -O3 -march=native -flto"
+cmd="${0%.sh}.c -O3 -march=native -flto"
 clang="-fuse-ld=lld -rtlib=compiler-rt"
 gcc=""
 
