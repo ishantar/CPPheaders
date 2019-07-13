@@ -12,7 +12,11 @@
      ARGP_dispatch( arg do_, arg, opt1, opt2, fmt)
 
  # define ARGP_dispatch(pred,arg,opt1,opt2,fmt)                       \
+<<<<<<< HEAD
 EFER( ARGP_cleanup, (_##pred##argp_fmt##fmt(arg,opt1,opt2)))
+=======
+     DEFER( ARGP_cleanup, (_##pred##argp_fmt##fmt(arg,opt1,opt2)))
+>>>>>>> spin argp.h back out
 
  # define  do_argp_fmt3(arg,tfn,ffn) ,tfn
  # define _do_argp_fmt3(arg,tfn,ffn) ,ffn
