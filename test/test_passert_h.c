@@ -25,7 +25,7 @@
 
 int main(void) 
  {
-    void *p = NULL; //malloc(0);
+    void *p = NULL;
      Assert(p RARGS);
     printf("%p",p);
     return 0;

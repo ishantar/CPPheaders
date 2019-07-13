@@ -31,10 +31,10 @@ for CMPL in ${CASE_COMPILER}; do
              $'\n'[^\"]*': Assertion `'*' failed.')
               [[ -n "${ARGS##[VX][NA]*}" && -z "${DBUG##D*}${PRED##P*}" ]]    &&
                                                           TSTRESULT="(PASS)" ;;
-             $'\n"message string yay!"\n...\n'*)
+             $'\n"message string yay!"\n\n'*)
               [[ -n "${DBUG##N*}" && -n "${PRED##N*}" && -z "${ARGS##VA*}" ]] &&
                                                           TSTRESULT="(PASS)" ;;
-             $'\n"first message string!"\n...\n'*)
+             $'\n"first message string!"\n\n'*)
               [[ -n "${DBUG##N*}" && -n "${PRED##N*}" && -z "${ARGS##XN*}" ]] &&
                                                           TSTRESULT="(PASS)" ;;
            esac
