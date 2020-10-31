@@ -64,6 +64,11 @@ reverse.h:
    *  commas.  a trailing comma is suppressed.
    */
 		rvrs(a,b,...,z)       -> z, y, ..., a
+zargs.h:
+  /* this file is a dependency of `reverse.h'.  it impliments one utility primitive, useful only
+   *  for macro hacking.  it is not intended for "public API".
+   */
+
 
 elemsize.h:
   /* `elemsize' safely queries a potential array for the size of its element type;  objects
