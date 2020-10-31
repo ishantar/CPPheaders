@@ -10,7 +10,7 @@ cpparith.h:
    * with one exception (the item to repeat in ARITH_REP), any argument supplied to a
    *  `CPPArith' macro must be, or expand to, either: i) a recognized number, or ii) a
    *  sentinel token defined internally (eg. ARITH_ERR_MAX).
-   * where possible, supplying erronious arguments causes a preprossessing error. in some
+   * where possible, supplying erronious arguments causes a preprossessing error. in most
    *  cases, unfortunately, it may not.
    */
 		ARITH_INCR(x)         -> x+1
