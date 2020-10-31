@@ -23,9 +23,9 @@
                        __auto_type _brv_out = (INPUT);                        \
                        __auto_type _brv_tmp = (INPUT);                        \
                        asm("     mov  %[BITS],%%ecx  \n\t"   /* num bits */   \
-                           "top: sal  $0x1,%[TMP]    \n\t"   /* load carry */ \
+                           " 1:  sal  $0x1,%[TMP]    \n\t"   /* load carry */ \
                            "     rcr  $0x1,%[OUT]    \n\t"   /* push carry */ \
-                           "     loop top            \n\t"                    \
+                           "     loop 1b             \n\t"                    \
                             : [OUT]  "+r" (_brv_out),                         \
                               [TMP]  "+r" (_brv_tmp)                          \
                             : [BITS]  "i" (sizeof(INPUT)*8)                   \
