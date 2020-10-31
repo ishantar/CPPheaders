@@ -1,18 +1,19 @@
-/* note: decimal integers from 0 to 64 are currently recognized.
- * if the result of an operation would fall outside this range, an ARITH_ERR_* token is
- *  emitted (usually ARITH_ERR_MIN or ARITH_ERR_MAX).
- * for `ARITH_REP' and `ARITH_SEQ', items are emitted with separating commas. a trailing
- *  comma is suppressed.
- * for `ARITH_REP', `v' (the item repeated) may be any token sequence, including commas.
- * for `ARITH_SEQ', `a' and `z' (the start and end items) must be recognized as numbers.
- *  ascending or descending order is allowed.
- * with one exception (the item to repeat in ARITH_REP), any argument supplied to a
- *  `CPPArith' macro must be, or expand to, either: i) a recognized number, or ii) a
- *  sentinel token defined internally (eg. ARITH_ERR_MAX).
- * where possible, supplying erronious arguments causes a preprossessing error. in some
- *  cases, unfortunately, it may not.
- */
-cpparith.h:	ARITH_INCR(x)         -> x+1
+cpparith.h:
+  /* note: decimal integers from 0 to 64 are currently recognized.
+   * if the result of an operation would fall outside this range, an ARITH_ERR_* token is
+   *  emitted (usually ARITH_ERR_MIN or ARITH_ERR_MAX).
+   * for `ARITH_REP' and `ARITH_SEQ', items are emitted with separating commas. a trailing
+   *  comma is suppressed.
+   * for `ARITH_REP', `v' (the item repeated) may be any token sequence, including commas.
+   * for `ARITH_SEQ', `a' and `z' (the start and end items) must be recognized as numbers.
+   *  ascending or descending order is allowed.
+   * with one exception (the item to repeat in ARITH_REP), any argument supplied to a
+   *  `CPPArith' macro must be, or expand to, either: i) a recognized number, or ii) a
+   *  sentinel token defined internally (eg. ARITH_ERR_MAX).
+   * where possible, supplying erronious arguments causes a preprossessing error. in some
+   *  cases, unfortunately, it may not.
+   */
+		ARITH_INCR(x)         -> x+1
 		ARITH_DECR(x)         -> x-1
 		ARITH_ADD(x,y)        -> x+y
 		ARITH_SUB(x,y)        -> x-y
@@ -27,25 +28,56 @@ cpparith.h:	ARITH_INCR(x)         -> x+1
 		ARITH_SEQ(a,z)        -> a[, b[, c[, ...,]] z] 
 
 
-/* takes an argument `x' which may or may not be "empty" (either not supplied, or expanding
- *  entirely to whitespace).  different results are emitted depending on this condition, 
- * if `x' is nonempty, `y' is emitted: if `y' was not specified, a single comma is produced.
- * if `x' is empty, the result is: i) `n', if `n' was specified, or ii) nothing, if `y' and
- *  `n' were omitted, or iii) _argp_destroy, if only `y' was given (two-argument syntax).
- * two-argument syntax is relevant in cases where `y' is a macro name; it provides implicit
- *  cleanup for potentially unused argument lists (eg. `argp(x,y)(...)').  when _argp_destroy
- * is unnecessary, the suggested usage is `argp(x,y,)'.
- */
-argp.h          argp(x,y,n)           -> [[ x nonempty? ]] ? y : n
+argp.h:
+  /* takes an argument `x' which may or may not be "empty" (either not supplied, or expanding
+   *  entirely to whitespace).  different results are emitted depending on this condition, 
+   * if `x' is nonempty, `y' is emitted: if `y' was not specified, a single comma is produced.
+   * if `x' is empty, the result is: i) `n', if `n' was specified, or ii) nothing, if `y' and
+   *  `n' were omitted, or iii) `_argp_destroy', if only `y' was given (two-argument syntax).
+   * two-argument syntax is relevant in cases where `y' is a macro name; it provides implicit
+   *  cleanup for potentially unused argument lists (eg. `argp(x,y)(...)').
+   * when `_argp_destroy' is unnecessary, the suggested usage is `argp(x,y,)'.
+   */
+		argp(x,y,n)           -> [[ x nonempty? ]] ? y : n
                 argp(x,y)             -> [[ x nonempty? ]] ? y : _argp_destroy
                 argp(x)               -> [[ x nonempty? ]] ? , :
                 _argp_destroy(...)    ->
 
+argnp.h:
+  /* `argnp' takes any number of arguments, and reports about what was supplied.  if expanding
+   *  the variadic argument produces any non-whitespace token, the token `NONEMPTY' is emitted.
+   *  in the alternate case, the result is `EMPTY'.  note that commas are *not* removed when
+   *  expanding the variadic argument (ie, `argnp(,)' -> `NONEMPTY').
+   * `argp_opt' impliments functionality similar to `__VA_OPT__' (without C++).  it takes two
+   *  or more arguments; the first must be wrapped in parenthesis, and the rest form a variadic
+   *  parameter.  the variadic parameter is passed into `argnp' (commas included).
+   * if `argnp' reports `EMPTY', nothing is emitted.  otherwise, the first argument is stripped
+   *  of parenthesis and its expansion is emitted.  these semantics allow output containing
+   *  unshielded commas to be specified (ie, `argp_opt((,),_,)' -> `,').
+   */
+		argnp(va...)          -> [[ va nonempty? || va nonsingle? ]] ? NONEMPTY : EMPTY
+                argp_opt((x),va...)   -> [[ va nonempty? || va nonsingle? ]] ? x :
 
-argnp.h         argnp(va...)          -> [[ va nonempty? && va nonmultiple? ]] ? NONEMPTY : EMPTY
-                argp_opt((x),va...)   -> [[ va nonempty? && va nonmultiple? ]] ? x :
+
+reverse.h:
+  /* `rvrs' takes up to 64 arguments.  they are re-emitted in reverse order, with separating
+   *  commas.  a trailing comma is suppressed.
+   */
+		rvrs(a,b,...,z)       -> z, y, ..., a
+
+elemsize.h:
+  /* `elemsize' safely queries a potential array for the size of its element type;  objects
+   *  which are not arrays (such as base type elements from multidimensional arrays) are never
+   *  dereferenced.  array types and pointers are distinguished.  for non-array objects, the
+   *  size of the base object is returned.
+   * note that while `long var[2]; sizeof(var[0])' and `int var[2][2]; sizeof(var[0])' both
+   *  report 8, their sub-element sizesare 4 and segmentation fault.  `elemsize' solves this.
+   */
+		elemsize(x)           -> [[ x arraytype? ]] ? sizeof(x[0]) : sizeof(x)
 
 
-reverse.h       rvrs(a,b,...,z)       -> z, y, ..., a
-
-brv.h           brv(x)                -> [[ x inttype? ]] ? (bitwise-reverse value) : (compile error)
+brv.h:
+  /* `brv' is not a preprocessing utility; it is an assembly implimentation for bit-reverse
+   *  operations on integer types.  the operand is not mutated.
+   */
+		brv(x)                -> [[ x inttype? ]] ? (bitwise-reversed value) : (compile error)
