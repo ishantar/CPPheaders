@@ -2,7 +2,6 @@
 #define ZARGS_H 
 #include "argp.h"
 
-    /* primitives */
 #define _zx(args...) args
 #define _zex(args...) args
 #define _zblock
@@ -33,8 +32,4 @@
 
 
 #endif  /* ZARGS_H */
-
-
-
-    
 

@@ -1,35 +1,30 @@
 #ifndef BRV_H
- /* dependancy check */
- #if !defined(__x86_64__) && !defined(__i386__)
-  #error `brv.h` requires x86 instruction set (__i386__ or __x86_64__)
- #elif !defined(__GNUC__)
-  #error `brv.h` requires gcc extensions (__GNUC__)
- #endif
- /* supported */
  #define BRV_H
+ #ifndef __GNUC__
+  #warning __GNUC__ not defined: "brv.h" unlikely to work
+ #endif
 
- /* only accept int types */
- #define brv_typecheck(INPUT) _Static_assert(_Generic(((INPUT) + 0ULL),       \
-                                   unsigned long long: 1, default: 0 ),       \
-                                   brv_errmsg(INPUT) )
- /* only emit useful errors */
- #define brv_errmsg(INPUT) brv_err_i(__FILE__,:__LINE__ ERROR: `brv` operand, \
-   , must have integer type (passed `INPUT`))
+ #define brv_errmsg() brv_err_i(__FILE__,:__LINE__ ERROR: `brv` operand must, \
+  , have integer type.)
  #define brv_err_i(file,re,_,expand...) brv_err_ii(file,re,expand)
  #define brv_err_ii(file,head,tail...) file#head#tail
 
- /* implimentation */
- #define brv(INPUT) ({ brv_typecheck(INPUT);                                  \
-                       __auto_type _brv_out = (INPUT);                        \
-                       __auto_type _brv_tmp = (INPUT);                        \
-                       asm("     mov  %[BITS],%%ecx  \n\t"   /* num bits */   \
-                           " 1:  sal  $0x1,%[TMP]    \n\t"   /* load carry */ \
-                           "     rcr  $0x1,%[OUT]    \n\t"   /* push carry */ \
-                           "     loop 1b             \n\t"                    \
-                            : [OUT]  "+r" (_brv_out),                         \
-                              [TMP]  "+r" (_brv_tmp)                          \
-                            : [BITS]  "i" (sizeof(INPUT)*8)                   \
-                            : "ecx" );                                        \
-                       _brv_out; })
+ #define brv_typecheck(compat) _Static_assert(_Generic(((compat) + 0ULL),     \
+                                   unsigned long long: 1, default: 0 ),       \
+                                   brv_errmsg() )
+ 
+ #define brv(INPUT) ({ __auto_type _brv_src = (INPUT);       /*expand once*/  \
+		       brv_typecheck(_brv_src);                               \
+		       typeof(_brv_src) _brv_out = 0;                         \
+		       int count = (sizeof(_brv_src)*8);                      \
+                       asm("1: shr  $0x1,%[SRC]    \n\t"     /* load cf  */   \
+                           "   adc  %[OUT],%[OUT]  \n\t"     /* x=2x+bit */   \
+                           "   sub  $0x1,%[COUNT]  \n\t"		      \
+			   "   jne  1b		   \n\t"                      \
+                            :  [SRC]   "+r" (_brv_src),                       \
+			       [COUNT] "+r" (count),                          \
+			       [OUT]   "+r" (_brv_out)                        \
+            	        ); _brv_out; })
 
 #endif /* BRV_H */
+
